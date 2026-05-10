@@ -140,7 +140,3 @@ CREATE TABLE problems (
     next_review TEXT    NOT NULL
 );
 ```
-
----
-
-*Keep grinding — consistently beats cramming every time.* 💪
