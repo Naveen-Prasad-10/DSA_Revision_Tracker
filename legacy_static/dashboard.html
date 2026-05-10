@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics Dashboard — Code Review Tracker</title>
+  <meta name="description" content="Analytics dashboard for your LeetCode spaced-repetition tracker — solve streaks, topic heatmap, and daily activity." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Shared design system -->
+  <link rel="stylesheet" href="/static/style.css" />
+  <!-- Dashboard-specific styles -->
+  <link rel="stylesheet" href="/static/dashboard.css" />
+  <!-- Chart.js v4 (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ── Header ───────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon">📊</span>
+        <div>
+          <h1 class="logo-title">Analytics</h1>
+          <p class="logo-sub">Your Coding Progress Dashboard</p>
+        </div>
+      </div>
+      <nav id="main-nav" style="display:flex; gap:10px; align-items:center;">
+        <a href="/"          class="nav-link" id="nav-tracker">🧠 Tracker</a>
+        <a href="/dashboard" class="nav-link active" id="nav-dashboard">📊 Dashboard</a>
+        <a href="/roadmap"   class="nav-link" id="nav-roadmap">🗺️ Roadmap</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── Main ─────────────────────────────────────────────── -->
+  <main class="dashboard-page">
+
+    <!-- ── Toolbar ────────────────────────────────────────── -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;">
+      <p style="font-size:0.82rem; color:var(--text-muted);">
+        Live data from your tracker database
+      </p>
+      <button class="btn-refresh" id="refresh-btn" title="Refresh all charts">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- ── Headline Summary Cards ─────────────────────────── -->
+    <div class="dash-section-title">📋 Overview</div>
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-icon">📚</div>
+        <div class="stat-card-value" id="stat-total">—</div>
+        <div class="stat-card-label">Total Problems</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-card-icon">✅</div>
+        <div class="stat-card-value" id="stat-active">—</div>
+        <div class="stat-card-label">Active</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-card-icon">🔥</div>
+        <div class="stat-card-value" id="stat-due">—</div>
+        <div class="stat-card-label">Due Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⭐</div>
+        <div class="stat-card-value" id="stat-conf">—</div>
+        <div class="stat-card-label">Avg Confidence</div>
+      </div>
+    </div>
+
+    <!-- ── Streak Banner ──────────────────────────────────── -->
+    <div class="dash-section-title">🔥 Streak</div>
+    <div class="streak-card" id="streak-card">
+      <div class="streak-flame">🔥</div>
+      <div class="streak-numbers">
+        <div class="streak-stat">
+          <div class="streak-stat-value" id="streak-current">—</div>
+          <div class="streak-stat-label">Current Streak (days)</div>
+        </div>
+        <div class="streak-stat">
+          <div class="streak-stat-value accent" id="streak-longest">—</div>
+          <div class="streak-stat-label">Longest Streak</div>
+        </div>
+        <div class="streak-stat">
+          <div class="streak-stat-value green" id="streak-days">—</div>
+          <div class="streak-stat-label">Days Active</div>
+        </div>
+      </div>
+      <div class="streak-callout" id="streak-callout">
+        <strong id="streak-msg">Loading…</strong>
+        <span id="streak-sub" style="font-size:0.72rem; opacity:0.7;"></span>
+      </div>
+    </div>
+
+    <!-- ── Charts Row ─────────────────────────────────────── -->
+    <div class="dash-section-title">📈 Activity</div>
+    <div class="charts-grid">
+
+      <!-- Line chart — problems over time -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Problems Solved per Day</div>
+            <div class="chart-card-sub">Last 30 days</div>
+          </div>
+          <span class="chart-tag">LINE</span>
+        </div>
+        <div class="chart-wrap" style="height:240px;">
+          <canvas id="chart-over-time" aria-label="Problems solved over time line chart"></canvas>
+        </div>
+        <div class="last-updated" id="time-updated"></div>
+      </div>
+
+      <!-- Bar chart — weak topics -->
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <div>
+            <div class="chart-card-title">Weak Topics</div>
+            <div class="chart-card-sub">Sorted by avg confidence ↑</div>
+          </div>
+          <span class="chart-tag" style="background:rgba(248,113,113,0.12);color:var(--red);">WEAK</span>
+        </div>
+        <div class="chart-wrap" style="height:240px;">
+          <canvas id="chart-weak-topics" aria-label="Weak topics bar chart"></canvas>
+        </div>
+        <div id="weak-topics-table" style="margin-top:14px;"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

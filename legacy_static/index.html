@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Review Tracker — Spaced Repetition</title>
+  <meta name="description" content="Track and revise LeetCode / coding problems using spaced repetition scheduling." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon">🧠</span>
+        <div>
+          <h1 class="logo-title">Code Review</h1>
+          <p class="logo-sub">Spaced Repetition Tracker</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div class="header-stats">
+          <div class="stat-chip">
+            <span class="stat-num" id="due-count">—</span>
+            <span class="stat-label">Due Today</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-num" id="total-count">—</span>
+            <span class="stat-label">Total</span>
+          </div>
+        </div>
+        <nav style="display:flex; gap:8px; align-items:center;">
+          <a href="/dashboard" class="nav-link" id="nav-dashboard">📊 Dashboard</a>
+          <a href="/roadmap"   class="nav-link" id="nav-roadmap">🗺️ Roadmap</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main layout ────────────────────────────────── -->
+  <main class="container main-grid">
+
+    <!-- LEFT: Add Problem form -->
+    <section class="card" id="add-section">
+      <h2 class="section-title">➕ Add Problem</h2>
+
+      <form id="add-form" novalidate>
+        <div class="field">
+          <label for="title">Problem Title</label>
+          <input id="title" type="text" placeholder="e.g. Two Sum" required />
+        </div>
+
+        <div class="field">
+          <label for="topic">Topic(s)</label>
+          <input id="topic" type="text" placeholder="e.g. Arrays, HashMap" required />
+        </div>
+
+        <div class="field row-2">
+          <div>
+            <label for="difficulty">Difficulty</label>
+            <select id="difficulty">
+              <option value="Easy">Easy</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+          <div>
+            <label for="date_solved">Date Solved</label>
+            <input id="date_solved" type="date" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Confidence <span class="hint">(1 = forgot, 5 = nailed it)</span></label>
+          <div class="confidence-group" id="conf-add">
+            <button type="button" class="conf-btn" data-val="1">1</button>
+            <button type="button" class="conf-btn" data-val="2">2</button>
+            <button type="button" class="conf-btn active" data-val="3">3</button>
+            <button type="button" class="conf-btn" data-val="4">4</button>
+            <button type="button" class="conf-btn" data-val="5">5</button>
+          </div>
+        </div>
+
+        <!-- Custom days override -->
+        <div class="field">
+          <label for="custom_days_add">
+            Custom Interval <span class="hint">(days — overrides confidence if set)</span>
+          </label>
+          <div class="custom-days-row">
+            <input id="custom_days_add" type="number" min="1" max="365" placeholder="e.g. 10" />
+            <button type="button" class="btn-ghost btn-clear-days" id="clear-add-days" title="Clear — use confidence">✕ Clear</button>
+          </div>
+          <p class="schedule-preview" id="schedule-preview">📅 Next review in <strong>4 days</strong></p>
+        </div>
+
+        <button type="submit" class="btn-primary" id="add-btn">Add Problem</button>
+        <p class="form-feedback" id="form-feedback"></p>
+      </form>
+    </section>
+
+    <!-- RIGHT: Dashboard panels -->
+    <div class="right-col">
+
+      <!-- Due Today -->
+      <section class="card" id="due-section">
+        <div class="section-header">
+          <h2 class="section-title">🔥 Due Today</h2>
+          <button class="btn-ghost" onclick="loadAll()">Refresh</button>
+        </div>
+        <div id="due-list" class="problem-list">
+          <p class="empty-state">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Upcoming -->
+      <section class="card" id="upcoming-section">
+        <h2 class="section-title">📅 Upcoming</h2>
+        <div id="upcoming-list" class="problem-list">
+          <p class="empty-state">Loading…</p>
+        </div>
+      </section>
+
+      <!-- Completed -->
+      <section class="card" id="completed-section">
+        <div class="section-header">
+          <h2 class="section-title">✅ Completed</h2>
+          <button class="btn-ghost" id="toggle-completed-btn" onclick="toggleCompleted()">Show</button>
+        </div>
+        <div id="completed-list" class="problem-list hidden-list">
+          <p class="empty-state">No completed problems yet.</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ── Revision Modal (quick confidence update) ───── -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h3 id="modal-title">Revise Problem</h3>
+      <p class="modal-sub" id="modal-sub"></p>
+
+      <label class="modal-label">Update Confidence</label>
+      <div class="confidence-group" id="conf-modal">
+        <button type="button" class="conf-btn" data-val="1">1</button>
+        <button type="button" class="conf-btn" data-val="2">2</button>
+        <button type="button" class="conf-btn active" data-val="3">3</button>
+        <button type="button" class="conf-btn" data-val="4">4</button>
+        <button type="button" class="conf-btn" data-val="5">5</button>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label class="modal-label">
+          Custom Interval <span class="hint">(days)</span>
+        </label>
+        <div class="custom-days-row">
+          <input id="custom_days_revise" type="number" min="1" max="365" placeholder="Leave blank = use confidence" />
+          <button type="button" class="btn-ghost btn-clear-days" id="clear-revise-days" title="Clear">✕ Clear</button>
+        </div>
+      </div>
+
+      <p class="schedule-preview" id="modal-preview">📅 Next review in <strong>4 days</strong></p>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal('revision')">Cancel</button>
+        <button class="btn-primary" id="modal-save-btn">Save &amp; Reschedule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Edit Modal (full problem edit) ─────────────── -->
+  <div id="edit-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-card modal-wide">
+      <h3>✏️ Edit Problem</h3>
+      <p class="modal-sub" id="edit-sub"></p>
+
+      <div class="field">
+        <label for="edit-title">Title</label>
+        <input id="edit-title" type="text" />
+      </div>
+      <div class="field">
+        <label for="edit-topic">Topic(s)</label>
+        <input id="edit-topic" type="text" />
+      </div>
+      <div class="field row-2">
+        <div>
+          <label for="edit-difficulty">Difficulty</label>
+          <select id="edit-difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+        <div>
+          <label for="edit-date-solved">Date Solved</label>
+          <input id="edit-date-solved" type="date" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="modal-label">Confidence</label>
+        <div class="confidence-group" id="conf-edit">
+          <button type="button" class="conf-btn" data-val="1">1</button>
+          <button type="button" class="conf-btn" data-val="2">2</button>
+          <button type="button" class="conf-btn active" data-val="3">3</button>
+          <button type="button" class="conf-btn" data-val="4">4</button>
+          <button type="button" class="conf-btn" data-val="5">5</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="edit-custom-days">
+          Custom Interval <span class="hint">(days — blank = use confidence)</span>
+        </label>
+        <div class="custom-days-row">
+          <input id="edit-custom-days" type="number" min="1" max="365" placeholder="e.g. 10" />
+          <button type="button" class="btn-ghost btn-clear-days" id="clear-edit-days" title="Clear">✕ Clear</button>
+        </div>
+      </div>
+
+      <p class="schedule-preview" id="edit-preview">📅 Next review in <strong>4 days</strong></p>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal('edit')">Cancel</button>
+        <button class="btn-primary" id="edit-save-btn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

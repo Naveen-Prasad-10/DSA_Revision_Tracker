@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8-Week DSA Roadmap — Code Review Tracker</title>
+  <meta name="description" content="Structured 8-week DSA study plan with 100+ curated LeetCode problems. Track your progress with checkboxes and progress bars." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Shared design system -->
+  <link rel="stylesheet" href="/static/style.css" />
+  <!-- Roadmap-specific styles -->
+  <link rel="stylesheet" href="/static/roadmap.css" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon">🗺️</span>
+        <div>
+          <h1 class="logo-title">DSA Roadmap</h1>
+          <p class="logo-sub">8-Week Structured Study Plan</p>
+        </div>
+      </div>
+      <nav style="display:flex; gap:10px; align-items:center;">
+        <a href="/"          class="nav-link" id="nav-tracker">🧠 Tracker</a>
+        <a href="/dashboard" class="nav-link" id="nav-dashboard">📊 Dashboard</a>
+        <a href="/roadmap"   class="nav-link active" id="nav-roadmap">🗺️ Roadmap</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── Main ───────────────────────────────────────────── -->
+  <main class="roadmap-page">
+
+    <!-- Global Rules Banner -->
+    <div class="rules-banner" role="complementary" aria-label="Study rules">
+      <h2>📋 Weekly Study Rules</h2>
+      <div class="rule-chip">📦 <strong>Total/week:</strong>&nbsp;12–15 problems</div>
+      <div class="rule-chip">🆕 <strong>New:</strong>&nbsp;8–9</div>
+      <div class="rule-chip">🔁 <strong>Revision:</strong>&nbsp;4–6</div>
+      <div class="rule-chip">📊 <strong>Difficulty:</strong>&nbsp;~70% Easy / 30% Medium</div>
+      <div class="rule-chip">🐍 <strong>Language:</strong>&nbsp;Python</div>
+    </div>
+
+    <!-- Overall Progress -->
+    <div class="overall-progress" role="progressbar" aria-label="Overall roadmap completion">
+      <span class="overall-progress-label" id="overall-label">Overall Progress — 0 / 0 problems</span>
+      <div class="overall-bar-wrap">
+        <div class="overall-bar-fill" id="overall-fill" style="width:0%"></div>
+      </div>
+      <span class="overall-pct" id="overall-pct">0%</span>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" role="group" aria-label="Filter problems">
+      <button class="filter-btn active" data-filter="all" id="filter-all">All Problems</button>
+      <button class="filter-btn" data-filter="new" id="filter-new">🆕 New Only</button>
+      <button class="filter-btn" data-filter="revision" id="filter-revision">🔁 Revision Only</button>
+    </div>
+
+    <!-- Accordion of weeks -->
+    <div class="week-accordion" id="week-accordion" aria-label="8-week DSA roadmap">
+      <!-- Rendered by roadmap.js -->
+    </div>
+
+  </main>
+
+  <!-- ── Add Problem to Week Modal ──────────────────────── -->
+  <div id="add-prob-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="add-prob-modal-title">
+    <div class="modal-card modal-wide">
+      <h3 id="add-prob-modal-title">Add Problem — Week N</h3>
+      <p class="modal-sub">The problem will be saved locally and shown in this week's section.</p>
+
+      <div class="field">
+        <label for="add-prob-id">LeetCode Problem # <span class="hint">(optional — leave blank if unknown)</span></label>
+        <input id="add-prob-id" type="number" min="1" placeholder="e.g. 42" />
+      </div>
+
+      <div class="field">
+        <label for="add-prob-name">Problem Name <span class="hint">(required)</span></label>
+        <input id="add-prob-name" type="text" placeholder="e.g. Trapping Rain Water" required />
+      </div>
+
+      <div class="field">
+        <label for="add-prob-type">Add to Section</label>
+        <select id="add-prob-type">
+          <option value="new">🆕 New Problems</option>
+          <option value="revision">🔁 Revision</option>
+        </select>
+      </div>
+
+      <p id="add-prob-error" style="font-size:0.82rem; color:#f87171; min-height:1.2em; margin-top:4px;"></p>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" id="add-prob-cancel">Cancel</button>
+        <button class="btn-primary" id="add-prob-save" style="margin-top:0;">Add Problem</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Data + Logic (order matters: data first) -->
+  <script src="/static/roadmap_data.js"></script>
+  <script src="/static/roadmap.js"></script>
+</body>
+</html>

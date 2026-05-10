@@ -1,0 +1,396 @@
+/* RoadmapPage.css */
+
+.roadmap-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.roadmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 24px;
+}
+
+.roadmap-header-content h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.roadmap-sub {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+/* Overall Progress Card */
+.overall-stats-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 260px;
+  box-shadow: var(--shadow);
+}
+
+.overall-stats-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.overall-bar-wrap {
+  width: 100%;
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.overall-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.overall-pct {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Rules Banner */
+.rules-banner {
+  display: flex;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(124, 109, 250, 0.1), rgba(52, 211, 153, 0.05));
+  border: 1px solid rgba(124, 109, 250, 0.2);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  justify-content: space-around;
+}
+
+.rule-item {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.rule-item strong {
+  color: var(--text);
+  margin-right: 4px;
+}
+
+/* Filters */
+.roadmap-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--tr);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* Week Cards */
+.week-card {
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color var(--tr);
+}
+
+.week-card.open {
+  border-color: rgba(124, 109, 250, 0.4);
+}
+
+.week-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: var(--surface);
+}
+
+.week-header:hover {
+  background: var(--surface-2);
+}
+
+.week-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.week-badge {
+  background: rgba(124, 109, 250, 0.12);
+  color: var(--accent);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.week-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.week-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.week-prog-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.week-prog-bar {
+  width: 60px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.week-prog-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.chevron {
+  width: 10px; height: 10px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: rotate(45deg);
+  transition: transform var(--tr);
+}
+
+.week-card.open .chevron {
+  transform: rotate(-135deg);
+}
+
+.week-body {
+  padding: 0 20px 20px;
+  background: var(--surface);
+}
+
+.week-body-inner {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.prob-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prob-section-title.new-title { color: var(--green); }
+.prob-section-title.rev-title { color: var(--accent); }
+
+.prob-section-title .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.prob-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.p-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  transition: all var(--tr);
+}
+
+.p-row:hover {
+  background: rgba(124, 109, 250, 0.05);
+}
+
+.p-row.done {
+  opacity: 0.5;
+}
+
+.p-row.done .p-link {
+  text-decoration: line-through;
+}
+
+.p-id {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  width: 40px;
+}
+
+.p-link {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.p-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.p-badge.new { background: rgba(52, 211, 153, 0.1); color: var(--green); }
+.p-badge.revision { background: rgba(124, 109, 250, 0.1); color: var(--accent); }
+.p-badge.custom { background: rgba(251, 191, 36, 0.1); color: var(--yellow); }
+
+.p-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.p-btn-rem {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.p-btn-rem:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.p-btn-del {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.p-btn-del:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.week-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+.btn-add-week {
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(124, 109, 250, 0.04);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all var(--tr);
+}
+
+.btn-add-week:hover {
+  border-color: var(--accent);
+  background: rgba(124, 109, 250, 0.1);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease;
+}
+
+.modal-card h3 {
+  margin-bottom: 4px;
+  font-size: 1.2rem;
+}
+
+.modal-sub {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}

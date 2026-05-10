@@ -1,0 +1,437 @@
+/* =========================================================
+   roadmap.css — 8-Week DSA Roadmap Dashboard Styles
+   Shares CSS variables with style.css (same dark theme)
+   ========================================================= */
+
+/* ── Page Layout ─────────────────────────────────────────── */
+.roadmap-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+/* ── Global Rules Banner ─────────────────────────────────── */
+.rules-banner {
+  background: linear-gradient(135deg, rgba(124,109,250,0.12), rgba(52,211,153,0.08));
+  border: 1px solid rgba(124,109,250,0.3);
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  align-items: center;
+}
+
+.rules-banner h2 {
+  width: 100%;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.rule-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.rule-chip strong { color: var(--text); }
+
+/* ── Filter Bar ──────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 7px 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filter-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ── Week Accordion ──────────────────────────────────────── */
+.week-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.week-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.week-card:hover { border-color: rgba(124,109,250,0.3); }
+
+/* ── Week Header (clickable) ─────────────────────────────── */
+.week-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
+  transition: background var(--transition);
+}
+.week-header:hover { background: rgba(255,255,255,0.03); }
+
+.week-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.week-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.week-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.week-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* Progress pill */
+.progress-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.progress-bar-wrap {
+  width: 80px;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 0.4s ease;
+}
+.progress-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Chevron */
+.chevron {
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+.week-card.open .chevron { transform: rotate(180deg); }
+
+/* ── Week Body (collapsible) ─────────────────────────────── */
+.week-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.week-card.open .week-body { max-height: 3000px; }
+
+.week-body-inner {
+  padding: 0 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Divider between new and revision sections */
+.week-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ── Problem Section (New / Revision) ────────────────────── */
+.prob-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+.prob-section-title.new-title  { color: var(--accent); }
+.prob-section-title.rev-title  { color: var(--yellow); }
+
+.prob-section-title .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.new-title .dot  { background: var(--accent); }
+.rev-title .dot  { background: var(--yellow); }
+
+/* ── Problem Row ─────────────────────────────────────────── */
+.problem-list-roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.problem-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  transition: border-color var(--transition), transform var(--transition), background var(--transition);
+  animation: slideIn 0.22s ease;
+}
+.problem-row:hover {
+  border-color: rgba(124,109,250,0.35);
+  transform: translateX(2px);
+}
+
+/* Completed state */
+.problem-row.completed {
+  background: rgba(52,211,153,0.06);
+  border-color: rgba(52,211,153,0.2);
+}
+.problem-row.completed .prob-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Hidden (filtered out) */
+.problem-row.hidden-row { display: none; }
+
+/* Checkbox */
+.prob-checkbox {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+
+/* Problem number badge */
+.prob-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 7px;
+  flex-shrink: 0;
+  min-width: 42px;
+  text-align: center;
+}
+
+/* Problem name link */
+.prob-name {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--transition);
+  min-width: 0;
+}
+.prob-name:hover { color: var(--accent); }
+
+/* Type badge (New / Revision) */
+.type-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.type-badge.new  { background: rgba(124,109,250,0.15); color: var(--accent); }
+.type-badge.rev  { background: rgba(251,191,36,0.15);  color: var(--yellow); }
+
+/* Add to reminders button */
+.btn-add-reminder {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.btn-add-reminder:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(124,109,250,0.07);
+}
+.btn-add-reminder.added {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(52,211,153,0.07);
+  cursor: default;
+}
+
+/* ── Toast notification ───────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 500;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: toastIn 0.25s ease, toastOut 0.3s ease 2.5s forwards;
+  pointer-events: none;
+}
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.error   { border-color: var(--red);   color: var(--red); }
+
+@keyframes toastIn  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { to   { opacity: 0; transform: translateY(12px); } }
+
+/* ── Overall progress bar at top ─────────────────────────── */
+.overall-progress {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.overall-progress-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.overall-bar-wrap {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.overall-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width 0.5s ease;
+}
+.overall-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .week-header { padding: 14px 16px; }
+  .week-body-inner { padding: 0 16px 16px; }
+  .rules-banner { flex-direction: column; gap: 8px; }
+  .progress-bar-wrap { width: 50px; }
+  .btn-add-reminder { display: none; } /* hide on tiny screens */
+}
+
+/* ── Add Problem to Week button (inside week body) ───────── */
+.btn-add-week {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px dashed rgba(124,109,250,0.4);
+  border-radius: var(--radius-sm);
+  background: rgba(124,109,250,0.05);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  margin-top: 4px;
+  justify-content: center;
+}
+.btn-add-week:hover {
+  background: rgba(124,109,250,0.12);
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ── Delete custom problem button ────────────────────────── */
+.btn-delete-custom {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.btn-delete-custom:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(248,113,113,0.08);
+}
+

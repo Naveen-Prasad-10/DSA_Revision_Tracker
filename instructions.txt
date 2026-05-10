@@ -1,0 +1,58 @@
+# Coding Tracker — Running Instructions
+
+This project features a Flask backend and a React (Vite) frontend. Here is how to set up and run the application.
+
+## 🚀 Quick Start (Production Mode)
+
+This is the fastest way to run the application exactly as it was just configured.
+
+1.  **Install Python Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+2.  **Build the Frontend (Already done for you):**
+    ```bash
+    cd frontend
+    npm install
+    npm run build
+    cd ..
+    ```
+
+3.  **Start the Server:**
+    ```bash
+    python app.py
+    ```
+
+4.  **Access the App:**
+    Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+
+## 🛠️ Development Mode (With Hot Reloading)
+
+If you are actively making changes to the UI, follow these steps to see your changes instantly.
+
+1.  **Start the Flask Backend (Terminal 1):**
+    ```bash
+    python app.py
+    ```
+    This provides the API at `localhost:5000`.
+
+2.  **Start the React Dev Server (Terminal 2):**
+    ```bash
+    cd frontend
+    npm run dev
+    ```
+
+3.  **Access the App:**
+    Open the URL provided by Vite (usually [http://localhost:5173](http://localhost:5173)).
+    *Note: The dev server is configured to proxy all API requests to the Flask backend automatically.*
+
+
+## 📁 Project Structure
+
+*   `app.py`: Flask entry point.
+*   `frontend/`: React source code (where you should make UI changes).
+*   `frontend/dist/`: The compiled React app served by Flask.
+*   `legacy_static/`: The old vanilla JS/HTML files (stored here as backup).
+*   `tracker.db`: Your local SQLite database.

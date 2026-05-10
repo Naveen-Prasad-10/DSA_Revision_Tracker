@@ -1,0 +1,55 @@
+/* Navbar.css */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(26, 29, 39, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 13px 0;
+}
+.navbar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.navbar-icon  { font-size: 1.8rem; line-height: 1; }
+.navbar-title { font-size: 1.05rem; font-weight: 700; line-height: 1.1; }
+.navbar-sub   { font-size: .7rem; color: var(--text-muted); margin-top: 1px; }
+
+.navbar-links { display: flex; align-items: center; gap: 6px; }
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 15px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: .81rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all var(--tr);
+  white-space: nowrap;
+}
+.nav-link:hover,
+.nav-link--active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 520px) {
+  .navbar-sub    { display: none; }
+  .nav-link      { padding: 6px 10px; font-size: .75rem; }
+}

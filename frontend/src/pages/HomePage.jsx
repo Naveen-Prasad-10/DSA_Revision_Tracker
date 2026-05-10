@@ -1,0 +1,213 @@
+import { useState, useEffect } from "react";
+import ConfidenceSelector from "../components/ConfidenceSelector";
+import { addProblem, getDueToday } from "../services/api";
+
+const DIFFICULTIES = ["Easy", "Medium", "Hard"];
+const TODAY = new Date().toISOString().slice(0, 10);
+
+const EMPTY_FORM = {
+  title:       "",
+  topic:       "",
+  difficulty:  "Medium",
+  date_solved: TODAY,
+  confidence:  3,
+  custom_days: "",
+};
+
+export default function HomePage() {
+  const [form,    setForm]    = useState(EMPTY_FORM);
+  const [status,  setStatus]  = useState(null);   // { type: "ok"|"err", msg }
+  const [loading, setLoading] = useState(false);
+  const [dueCount, setDueCount] = useState(null);
+
+  // ── Fetch due-today count for the header chip ─────────────
+  useEffect(() => {
+    getDueToday()
+      .then((d) => setDueCount(d.length))
+      .catch(() => {});
+  }, []);
+
+  function set(key, val) {
+    setForm((f) => ({ ...f, [key]: val }));
+  }
+
+  // ── Schedule preview ──────────────────────────────────────
+  const INTERVALS = { 1: 1, 2: 2, 3: 4, 4: 7, 5: 14 };
+  const previewDays = form.custom_days
+    ? parseInt(form.custom_days)
+    : INTERVALS[form.confidence];
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.topic.trim()) {
+      setStatus({ type: "err", msg: "⚠️ Title and topic are required." });
+      return;
+    }
+    setLoading(true);
+    setStatus(null);
+    try {
+      const payload = {
+        title:       form.title.trim(),
+        topic:       form.topic.trim(),
+        difficulty:  form.difficulty,
+        date_solved: form.date_solved,
+        confidence:  form.confidence,
+        custom_days: form.custom_days ? parseInt(form.custom_days) : null,
+      };
+      const data = await addProblem(payload);
+      setStatus({ type: "ok", msg: `✅ Added! Next review: ${data.next_review}` });
+      setForm(EMPTY_FORM);
+      setDueCount((c) => c); // don't change count — problem isn't due yet
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Something went wrong.";
+      setStatus({ type: "err", msg: `❌ ${msg}` });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="page" style={{ maxWidth: 560 }}>
+
+      {/* ── Header ──────────────────────────────────────── */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <h2 style={{ fontWeight: 700, fontSize: "1.3rem" }}>Add Problem</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: ".84rem", marginTop: 3 }}>
+              Log a solved problem and schedule your next review.
+            </p>
+          </div>
+          {dueCount !== null && (
+            <div style={{
+              background: dueCount > 0 ? "rgba(251,191,36,.12)" : "var(--surface-2)",
+              border: `1px solid ${dueCount > 0 ? "rgba(251,191,36,.3)" : "var(--border)"}`,
+              borderRadius: 10,
+              padding: "8px 16px",
+              textAlign: "center",
+            }}>
+              <div style={{ fontSize: "1.4rem", fontWeight: 800, color: dueCount > 0 ? "var(--yellow)" : "var(--accent)" }}>
+                {dueCount}
+              </div>
+              <div style={{ fontSize: ".66rem", textTransform: "uppercase", letterSpacing: ".06em", color: "var(--text-muted)" }}>
+                Due Today
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Form card ───────────────────────────────────── */}
+      <div className="card">
+        <form onSubmit={handleSubmit} noValidate>
+
+          <div className="field">
+            <label htmlFor="title">Problem Title</label>
+            <input
+              id="title"
+              className="input"
+              type="text"
+              placeholder="e.g. Two Sum"
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="topic">Topic(s)</label>
+            <input
+              id="topic"
+              className="input"
+              type="text"
+              placeholder="e.g. Arrays, HashMap"
+              value={form.topic}
+              onChange={(e) => set("topic", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="field row-2">
+            <div>
+              <label htmlFor="difficulty">Difficulty</label>
+              <select
+                id="difficulty"
+                className="select"
+                value={form.difficulty}
+                onChange={(e) => set("difficulty", e.target.value)}
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="date_solved">Date Solved</label>
+              <input
+                id="date_solved"
+                className="input"
+                type="date"
+                value={form.date_solved}
+                onChange={(e) => set("date_solved", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <label>
+              Confidence
+              <span className="hint"> (1 = forgot it, 5 = nailed it)</span>
+            </label>
+            <ConfidenceSelector
+              value={form.confidence}
+              onChange={(v) => set("confidence", v)}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="custom_days">
+              Custom Interval
+              <span className="hint"> (days — overrides confidence if set)</span>
+            </label>
+            <input
+              id="custom_days"
+              className="input"
+              type="number"
+              min={1}
+              max={365}
+              placeholder="Leave blank to use confidence"
+              value={form.custom_days}
+              onChange={(e) => set("custom_days", e.target.value)}
+            />
+          </div>
+
+          {/* Schedule preview */}
+          <div style={{
+            fontSize: ".8rem",
+            color: "var(--text-muted)",
+            padding: "7px 12px",
+            background: "var(--surface-2)",
+            borderRadius: "var(--radius-sm)",
+            borderLeft: "3px solid var(--accent)",
+            marginBottom: 18,
+          }}>
+            📅 Next review in <strong style={{ color: "var(--accent)" }}>
+              {previewDays} {previewDays === 1 ? "day" : "days"}
+            </strong>
+          </div>
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Adding…" : "➕ Add Problem"}
+          </button>
+
+          {status && (
+            <p className={`feedback ${status.type === "ok" ? "ok" : "err"}`}>
+              {status.msg}
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  );
+}

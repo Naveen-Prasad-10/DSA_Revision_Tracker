@@ -1,0 +1,70 @@
+/* ProblemCard.css */
+.pcard {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color var(--tr), transform var(--tr);
+}
+.pcard:hover { border-color: rgba(124,109,250,.3); transform: translateX(2px); }
+.pcard--done { opacity: .52; }
+.pcard--done .pcard-title { text-decoration: line-through; color: var(--text-muted); }
+
+/* Row: dot + info / actions */
+.pcard-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+}
+.pcard-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* On wider screens, row layout */
+@media (min-width: 540px) {
+  .pcard { flex-direction: row; align-items: center; }
+  .pcard-actions { align-self: center; }
+}
+
+/* Status dot */
+.pcard-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+.pcard-dot--red    { background: var(--red);    box-shadow: 0 0 6px var(--red); }
+.pcard-dot--yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+.pcard-dot--green  { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+
+/* Info block */
+.pcard-info  { flex: 1; min-width: 0; }
+.pcard-title { font-size: .92rem; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcard-meta  { display: flex; align-items: center; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+.pcard-topic { font-size: .74rem; color: var(--text-muted); }
+.pcard-date  { font-size: .72rem; color: var(--text-muted); }
+.pcard-conf  { font-size: .72rem; color: var(--text-muted); }
+
+/* Inline revise panel */
+.pcard-revise {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pcard-revise-label {
+  font-size: .78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
