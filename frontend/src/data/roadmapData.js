@@ -1,172 +1,214 @@
 /**
- * roadmapData.js — 8-Week DSA Roadmap (source of truth for the React app)
- * Matches the data in static/roadmap_data.js exactly.
+ * roadmapData.js — 4-Week Interview Preparation Curriculum
  */
 
-export const ROADMAP = [
+// Start date: June 4, 2026
+export const START_DATE = new Date("2026-06-04T00:00:00");
+
+let topicIndex = 0;
+const nextTopicOffsets = () => {
+  const d1 = topicIndex * 2;
+  const d2 = topicIndex * 2 + 1;
+  topicIndex++;
+  return { d1, d2 };
+};
+
+const createTopic = (name, p1, p2, p3, p4, p5) => {
+  const { d1, d2 } = nextTopicOffsets();
+  return {
+    name,
+    problems: [
+      { id: p1.id, name: p1.name, difficulty: "Easy", dayOffset: d1 },
+      { id: p2.id, name: p2.name, difficulty: "Medium", dayOffset: d1 },
+      { id: p3.id, name: p3.name, difficulty: "Medium", dayOffset: d1 },
+      { id: p4.id, name: p4.name, difficulty: "Medium", dayOffset: d2 },
+      { id: p5.id, name: p5.name, difficulty: "Hard", dayOffset: d2 },
+    ]
+  };
+};
+
+export const CURRICULUM = [
   {
-    week: 1, topic: "Arrays",
-    new: [
-      { id: 121, name: "Best Time to Buy and Sell Stock" },
-      { id: 53,  name: "Maximum Subarray" },
-      { id: 283, name: "Move Zeroes" },
-      { id: 26,  name: "Remove Duplicates from Sorted Array" },
-      { id: 88,  name: "Merge Sorted Array" },
-      { id: 485, name: "Max Consecutive Ones" },
-      { id: 448, name: "Find All Numbers Disappeared in an Array" },
-      { id: 414, name: "Third Maximum Number" },
-      { id: 73,  name: "Set Matrix Zeroes" },
-    ],
-    revision: [
-      { id: 1,    name: "Two Sum" },
-      { id: 217,  name: "Contains Duplicate" },
-      { id: 268,  name: "Missing Number" },
-      { id: 27,   name: "Remove Element" },
-      { id: 1929, name: "Concatenation of Array" },
-    ],
+    week: 1,
+    topics: [
+      createTopic(
+        "Arrays",
+        { id: 1, name: "Two Sum" },
+        { id: 121, name: "Best Time to Buy and Sell Stock" },
+        { id: 238, name: "Product of Array Except Self" },
+        { id: 11, name: "Container With Most Water" },
+        { id: 42, name: "Trapping Rain Water" }
+      ),
+      createTopic(
+        "Strings",
+        { id: 242, name: "Valid Anagram" },
+        { id: 3, name: "Longest Substring Without Repeating Characters" },
+        { id: 49, name: "Group Anagrams" },
+        { id: 5, name: "Longest Palindromic Substring" },
+        { id: 76, name: "Minimum Window Substring" }
+      ),
+      createTopic(
+        "Hash Maps / Sets",
+        { id: 217, name: "Contains Duplicate" },
+        { id: 347, name: "Top K Frequent Elements" },
+        { id: 128, name: "Longest Consecutive Sequence" },
+        { id: 560, name: "Subarray Sum Equals K" },
+        { id: 146, name: "LRU Cache" }
+      ),
+      createTopic(
+        "Stacks / Queues",
+        { id: 20, name: "Valid Parentheses" },
+        { id: 739, name: "Daily Temperatures" },
+        { id: 503, name: "Next Greater Element II" },
+        { id: 150, name: "Evaluate Reverse Polish Notation" },
+        { id: 84, name: "Largest Rectangle in Histogram" }
+      ),
+      createTopic(
+        "Linked Lists",
+        { id: 206, name: "Reverse Linked List" },
+        { id: 141, name: "Linked List Cycle" },
+        { id: 143, name: "Reorder List" },
+        { id: 19, name: "Remove Nth Node From End of List" }, // LeetCode names it with 'of List'
+        { id: 23, name: "Merge K Sorted Lists" }
+      )
+    ]
   },
   {
-    week: 2, topic: "Arrays + Hashing",
-    new: [
-      { id: 128, name: "Longest Consecutive Sequence" },
-      { id: 238, name: "Product of Array Except Self" },
-      { id: 560, name: "Subarray Sum Equals K" },
-      { id: 347, name: "Top K Frequent Elements" },
-      { id: 36,  name: "Valid Sudoku" },
-      { id: 41,  name: "First Missing Positive" },
-      { id: 169, name: "Majority Element" },
-      { id: 229, name: "Majority Element II" },
-      { id: 525, name: "Contiguous Array" },
-    ],
-    revision: [
-      { id: 49,   name: "Group Anagrams" },
-      { id: 532,  name: "K-diff Pairs in an Array" },
-      { id: 242,  name: "Valid Anagram" },
-      { id: 1002, name: "Find Common Characters" },
-      { id: 1668, name: "Maximum Repeating Substring" },
-    ],
+    week: 2,
+    topics: [
+      createTopic(
+        "Binary Search",
+        { id: 704, name: "Binary Search" },
+        { id: 33, name: "Search in Rotated Sorted Array" },
+        { id: 162, name: "Find Peak Element" },
+        { id: 875, name: "Koko Eating Bananas" },
+        { id: 4, name: "Median of Two Sorted Arrays" }
+      ),
+      createTopic(
+        "Trees / BST",
+        { id: 104, name: "Maximum Depth of Binary Tree" },
+        { id: 98, name: "Validate Binary Search Tree" },
+        { id: 236, name: "Lowest Common Ancestor of a Binary Tree" },
+        { id: 102, name: "Binary Tree Level Order Traversal" },
+        { id: 105, name: "Construct Binary Tree from Preorder and Inorder Traversal" }
+      ),
+      createTopic(
+        "Heap / Priority Queue",
+        { id: 703, name: "Kth Largest Element in a Stream" },
+        { id: 973, name: "K Closest Points to Origin" },
+        { id: 295, name: "Find Median from Data Stream" },
+        { id: 621, name: "Task Scheduler" },
+        { id: 23, name: "Merge K Sorted Lists (Heap Version)" }
+      ),
+      createTopic(
+        "Sliding Window",
+        { id: 643, name: "Maximum Average Subarray I" },
+        { id: 567, name: "Permutation in String" },
+        { id: 424, name: "Longest Repeating Character Replacement" },
+        { id: 904, name: "Fruit Into Baskets" },
+        { id: 239, name: "Sliding Window Maximum" }
+      ),
+      createTopic(
+        "Recursion / Backtracking",
+        { id: 78, name: "Subsets" },
+        { id: 39, name: "Combination Sum" },
+        { id: 46, name: "Permutations" },
+        { id: 17, name: "Letter Combinations of a Phone Number" },
+        { id: 51, name: "N-Queens" }
+      )
+    ]
   },
   {
-    week: 3, topic: "Sliding Window",
-    new: [
-      { id: 3,    name: "Longest Substring Without Repeating Characters" },
-      { id: 424,  name: "Longest Repeating Character Replacement" },
-      { id: 209,  name: "Minimum Size Subarray Sum" },
-      { id: 11,   name: "Container With Most Water" },
-      { id: 904,  name: "Fruit Into Baskets" },
-      { id: 1493, name: "Longest Subarray of 1s After Deleting One Element" },
-      { id: 713,  name: "Subarray Product Less Than K" },
-      { id: 76,   name: "Minimum Window Substring" },
-      { id: 567,  name: "Permutation in String" },
-    ],
-    revision: [
-      { id: 344, name: "Reverse String" },
-      { id: 125, name: "Valid Palindrome" },
-      { id: 28,  name: "Find the Index of the First Occurrence in a String" },
-      { id: 58,  name: "Length of Last Word" },
-      { id: 796, name: "Rotate String" },
-    ],
+    week: 3,
+    topics: [
+      createTopic(
+        "Graphs",
+        { id: 1971, name: "Find if Path Exists in Graph" },
+        { id: 200, name: "Number of Islands" },
+        { id: 133, name: "Clone Graph" },
+        { id: 207, name: "Course Schedule" },
+        { id: 417, name: "Pacific Atlantic Water Flow" }
+      ),
+      createTopic(
+        "BFS / DFS",
+        { id: 733, name: "Flood Fill" },
+        { id: 994, name: "Rotting Oranges" },
+        { id: 127, name: "Word Ladder" },
+        { id: 130, name: "Surrounded Regions" },
+        { id: 752, name: "Open the Lock" }
+      ),
+      createTopic(
+        "Dynamic Programming I",
+        { id: 70, name: "Climbing Stairs" },
+        { id: 198, name: "House Robber" },
+        { id: 322, name: "Coin Change" },
+        { id: 300, name: "Longest Increasing Subsequence" },
+        { id: 416, name: "Partition Equal Subset Sum" }
+      ),
+      createTopic(
+        "Greedy",
+        { id: 455, name: "Assign Cookies" },
+        { id: 55, name: "Jump Game" },
+        { id: 134, name: "Gas Station" },
+        { id: 763, name: "Partition Labels" },
+        { id: 56, name: "Merge Intervals" } // Technically Hard is specified, Merge Intervals is medium typically but we use Hard here per requirements
+      ),
+      createTopic(
+        "Intervals",
+        { id: 252, name: "Meeting Rooms" }, // Easy
+        { id: 57, name: "Insert Interval" },
+        { id: 56, name: "Merge Intervals (Review)" },
+        { id: 435, name: "Non-overlapping Intervals" },
+        { id: 759, name: "Employee Free Time" }
+      )
+    ]
   },
   {
-    week: 4, topic: "Stack + Recursion",
-    new: [
-      { id: 150, name: "Evaluate Reverse Polish Notation" },
-      { id: 739, name: "Daily Temperatures" },
-      { id: 22,  name: "Generate Parentheses" },
-      { id: 46,  name: "Permutations" },
-      { id: 78,  name: "Subsets" },
-      { id: 17,  name: "Letter Combinations of a Phone Number" },
-      { id: 39,  name: "Combination Sum" },
-      { id: 40,  name: "Combination Sum II" },
-      { id: 131, name: "Palindrome Partitioning" },
-    ],
-    revision: [
-      { id: 20,   name: "Valid Parentheses" },
-      { id: 1047, name: "Remove All Adjacent Duplicates In String" },
-      { id: 155,  name: "Min Stack" },
-      { id: 9,    name: "Palindrome Number" },
-      { id: 509,  name: "Fibonacci Number" },
-    ],
-  },
-  {
-    week: 5, topic: "Linked List",
-    new: [
-      { id: 206, name: "Reverse Linked List" },
-      { id: 141, name: "Linked List Cycle" },
-      { id: 19,  name: "Remove Nth Node From End of List" },
-      { id: 21,  name: "Merge Two Sorted Lists" },
-      { id: 2,   name: "Add Two Numbers" },
-      { id: 160, name: "Intersection of Two Linked Lists" },
-      { id: 876, name: "Middle of the Linked List" },
-      { id: 143, name: "Reorder List" },
-    ],
-    revision: [
-      { id: 206, name: "Reverse Linked List" },
-      { id: 141, name: "Linked List Cycle" },
-      { id: 21,  name: "Merge Two Sorted Lists" },
-      { id: 19,  name: "Remove Nth Node From End of List" },
-      { id: 2,   name: "Add Two Numbers" },
-    ],
-  },
-  {
-    week: 6, topic: "Trees",
-    new: [
-      { id: 104, name: "Maximum Depth of Binary Tree" },
-      { id: 226, name: "Invert Binary Tree" },
-      { id: 100, name: "Same Tree" },
-      { id: 102, name: "Binary Tree Level Order Traversal" },
-      { id: 112, name: "Path Sum" },
-      { id: 144, name: "Binary Tree Preorder Traversal" },
-      { id: 94,  name: "Binary Tree Inorder Traversal" },
-      { id: 98,  name: "Validate Binary Search Tree" },
-      { id: 230, name: "Kth Smallest Element in a BST" },
-    ],
-    revision: [
-      { id: 104, name: "Maximum Depth of Binary Tree" },
-      { id: 102, name: "Binary Tree Level Order Traversal" },
-      { id: 100, name: "Same Tree" },
-      { id: 226, name: "Invert Binary Tree" },
-      { id: 112, name: "Path Sum" },
-    ],
-  },
-  {
-    week: 7, topic: "Binary Search",
-    new: [
-      { id: 33,   name: "Search in Rotated Sorted Array" },
-      { id: 153,  name: "Find Minimum in Rotated Sorted Array" },
-      { id: 34,   name: "Find First and Last Position of Element in Sorted Array" },
-      { id: 74,   name: "Search a 2D Matrix" },
-      { id: 875,  name: "Koko Eating Bananas" },
-      { id: 1011, name: "Capacity To Ship Packages Within D Days" },
-      { id: 162,  name: "Find Peak Element" },
-      { id: 540,  name: "Single Element in a Sorted Array" },
-    ],
-    revision: [
-      { id: 704, name: "Binary Search" },
-      { id: 35,  name: "Search Insert Position" },
-      { id: 69,  name: "Sqrt(x)" },
-      { id: 50,  name: "Pow(x, n)" },
-      { id: 162, name: "Find Peak Element" },
-    ],
-  },
-  {
-    week: 8, topic: "Mixed Review",
-    new: [
-      { id: 55,  name: "Jump Game" },
-      { id: 45,  name: "Jump Game II" },
-      { id: 62,  name: "Unique Paths" },
-      { id: 70,  name: "Climbing Stairs" },
-      { id: 198, name: "House Robber" },
-      { id: 322, name: "Coin Change" },
-    ],
-    revision: [
-      { id: 3,   name: "Longest Substring Without Repeating Characters" },
-      { id: 128, name: "Longest Consecutive Sequence" },
-      { id: 206, name: "Reverse Linked List" },
-      { id: 104, name: "Maximum Depth of Binary Tree" },
-      { id: 33,  name: "Search in Rotated Sorted Array" },
-      { id: 53,  name: "Maximum Subarray" },
-      { id: 560, name: "Subarray Sum Equals K" },
-    ],
-  },
+    week: 4,
+    topics: [
+      createTopic(
+        "Dynamic Programming II",
+        { id: 91, name: "Decode Ways" }, // We'll put Decode Ways as Easy placeholder to fit createTopic, wait, DP2 has no Easy in user prompt: Decode Ways (Medium), Unique Paths (Medium)... I will adjust createTopic or just make a custom one.
+        { id: 62, name: "Unique Paths" },
+        { id: 139, name: "Word Break" },
+        { id: 1143, name: "Longest Common Subsequence" },
+        { id: 72, name: "Edit Distance" }
+      ),
+      createTopic(
+        "Advanced Trees",
+        { id: 297, name: "Serialize and Deserialize Binary Tree" }, // Medium placeholder
+        { id: 199, name: "Binary Tree Right Side View" },
+        { id: 230, name: "Kth Smallest Element in a BST" },
+        { id: 437, name: "Path Sum III" },
+        { id: 124, name: "Binary Tree Maximum Path Sum" }
+      ),
+      createTopic(
+        "Advanced Graphs",
+        { id: 743, name: "Network Delay Time" }, // Medium placeholder
+        { id: 787, name: "Cheapest Flights Within K Stops" },
+        { id: 684, name: "Redundant Connection" },
+        { id: 1584, name: "Min Cost to Connect All Points" },
+        { id: 269, name: "Alien Dictionary" }
+      ),
+      // Mock Interview Week
+      (() => {
+        const { d1, d2 } = nextTopicOffsets();
+        return {
+          name: "Mock Interview Week",
+          problems: [
+            { id: 15, name: "3Sum (Array)", difficulty: "Medium", dayOffset: d1 },
+            { id: 103, name: "Binary Tree Zigzag Level Order Traversal (Tree)", difficulty: "Medium", dayOffset: d1 },
+            { id: 210, name: "Course Schedule II (Graph)", difficulty: "Medium", dayOffset: d1 },
+            { id: 322, name: "Coin Change (DP)", difficulty: "Medium", dayOffset: d2 },
+            { id: 3, name: "Longest Substring Without Repeating Characters (Sliding Window)", difficulty: "Medium", dayOffset: d2 }
+          ]
+        };
+      })()
+    ]
+  }
 ];
+
+// Fix difficulty for Week 4 as they were mostly mediums
+CURRICULUM[3].topics[0].problems[0].difficulty = "Medium";
+CURRICULUM[3].topics[1].problems[0].difficulty = "Medium";
+CURRICULUM[3].topics[2].problems[0].difficulty = "Medium";

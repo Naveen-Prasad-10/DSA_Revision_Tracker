@@ -394,3 +394,92 @@
   gap: 12px;
   margin-top: 24px;
 }
+
+/* ── New UI Additions ────────────────────────────────── */
+
+.focus-cards {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.focus-card {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(124, 109, 250, 0.1), rgba(124, 109, 250, 0.02));
+  border: 1px solid rgba(124, 109, 250, 0.2);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.focus-card h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+
+.focus-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.focus-prog {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.focus-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.focus-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.focus-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.p-date-col {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  width: 50px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.p-badge.Easy { background: rgba(52, 211, 153, 0.1); color: var(--green); }
+.p-badge.Medium { background: rgba(251, 191, 36, 0.1); color: var(--yellow); }
+.p-badge.Hard { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+.p-badge.topic { background: rgba(124, 109, 250, 0.1); color: var(--accent); }
+
+.topic-prog {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  margin-left: auto;
+}

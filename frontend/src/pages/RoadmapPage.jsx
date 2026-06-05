@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ROADMAP } from "../data/roadmapData";
+import { CURRICULUM, START_DATE } from "../data/roadmapData";
 import { addProblem } from "../services/api";
 import "./RoadmapPage.css";
 
@@ -7,8 +7,7 @@ import "./RoadmapPage.css";
 const toSlug = (name) => name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
 const leetcodeUrl = (name) => `https://leetcode.com/problems/${toSlug(name)}/`;
 
-const STORAGE_KEY_COMPLETED = "roadmap_completed";
-const STORAGE_KEY_CUSTOM = "roadmap_custom_problems";
+const STORAGE_KEY_COMPLETED = "roadmap_completed_v2"; // Changed key so we don't conflict with old data
 
 export default function RoadmapPage() {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -18,24 +17,19 @@ export default function RoadmapPage() {
     } catch { return new Set(); }
   });
 
-  const [customProblems, setCustomProblems] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY_CUSTOM) || "{}");
-    } catch { return {}; }
+  const [filters, setFilters] = useState({
+    week: "all",
+    topic: "all",
+    difficulty: "all",
+    status: "all"
   });
 
-  const [activeFilter, setActiveFilter] = useState("all"); // "all" | "new" | "revision"
   const [openWeeks, setOpenWeeks] = useState(new Set([1])); // Week 1 open by default
-  const [modalData, setModalData] = useState(null); // { weekNum, type }
 
   // ── Sync with localStorage ───────────────────────────────────────────────
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify([...completed]));
   }, [completed]);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(customProblems));
-  }, [customProblems]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const toggleWeek = (weekNum) => {
@@ -47,46 +41,21 @@ export default function RoadmapPage() {
     });
   };
 
-  const toggleProblem = (weekNum, type, id) => {
-    const key = `w${weekNum}-${type}-${id}`;
+  const toggleProblem = (id) => {
     setCompleted(prev => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
 
-  const handleAddCustom = (weekNum, type, problem) => {
-    const key = `w${weekNum}-${type}`;
-    setCustomProblems(prev => {
-      const list = prev[key] || [];
-      if (list.some(p => String(p.id) === String(problem.id))) return prev;
-      return { ...prev, [key]: [...list, problem] };
-    });
-  };
-
-  const removeCustom = (weekNum, type, id) => {
-    const key = `w${weekNum}-${type}`;
-    const compKey = `w${weekNum}-${type}-${id}`;
-    setCustomProblems(prev => {
-      const list = prev[key] || [];
-      return { ...prev, [key]: list.filter(p => String(p.id) !== String(id)) };
-    });
-    setCompleted(prev => {
-      const next = new Set(prev);
-      next.delete(compKey);
-      return next;
-    });
-  };
-
-  const addToReminders = async (problem, type) => {
-    const difficulty = type === "revision" ? "Easy" : "Medium";
+  const addToReminders = async (problem, topicName) => {
     try {
       await addProblem({
         title: `#${problem.id} ${problem.name}`,
-        topic: "DSA Roadmap",
-        difficulty,
+        topic: `Curriculum: ${topicName}`,
+        difficulty: problem.difficulty,
         date_solved: new Date().toISOString().slice(0, 10),
         confidence: 3
       });
@@ -96,34 +65,82 @@ export default function RoadmapPage() {
     }
   };
 
-  // ── Progress Calculations ──────────────────────────────────────────────────
-  const stats = useMemo(() => {
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ── Derived Data ───────────────────────────────────────────────────────────
+  const { stats, currentFocusTopic, nextScheduledProblem } = useMemo(() => {
     let total = 0;
     let done = 0;
-    const weekStats = ROADMAP.map(week => {
-      const newProbs = [...week.new, ...(customProblems[`w${week.week}-new`] || [])];
-      const revProbs = [...week.revision, ...(customProblems[`w${week.week}-revision`] || [])];
-      
-      const weekTotal = newProbs.length + revProbs.length;
-      const weekDone = 
-        newProbs.filter(p => completed.has(`w${week.week}-new-${p.id}`)).length +
-        revProbs.filter(p => completed.has(`w${week.week}-revision-${p.id}`)).length;
-      
-      total += weekTotal;
-      done += weekDone;
-      
-      return { weekNum: week.week, total: weekTotal, done: weekDone, pct: weekTotal ? Math.round((weekDone/weekTotal)*100) : 0 };
+    const weekStats = [];
+    
+    // Flat list of all problems to easily find "next"
+    const allProblems = [];
+
+    CURRICULUM.forEach(w => {
+      let wTotal = 0;
+      let wDone = 0;
+      const topicStats = [];
+
+      w.topics.forEach(t => {
+        let tTotal = t.problems.length;
+        let tDone = 0;
+
+        t.problems.forEach(p => {
+          const isDone = completed.has(p.id);
+          if (isDone) tDone++;
+          
+          const scheduledDate = new Date(START_DATE);
+          scheduledDate.setDate(scheduledDate.getDate() + p.dayOffset);
+          
+          allProblems.push({ ...p, weekNum: w.week, topicName: t.name, isDone, scheduledDate });
+        });
+
+        wTotal += tTotal;
+        wDone += tDone;
+        topicStats.push({ name: t.name, total: tTotal, done: tDone, pct: Math.round((tDone/tTotal)*100) });
+      });
+
+      total += wTotal;
+      done += wDone;
+      weekStats.push({ weekNum: w.week, total: wTotal, done: wDone, pct: Math.round((wDone/wTotal)*100), topicStats });
     });
-    return { total, done, pct: total ? Math.round((done/total)*100) : 0, weekStats };
-  }, [customProblems, completed]);
+
+    const pct = total ? Math.round((done/total)*100) : 0;
+
+    // Determine current focus / next scheduled
+    // Sort all problems by scheduled date
+    allProblems.sort((a, b) => a.scheduledDate - b.scheduledDate);
+    
+    const nextProb = allProblems.find(p => !p.isDone);
+    let focusTopic = null;
+    if (nextProb) {
+      focusTopic = weekStats.find(w => w.weekNum === nextProb.weekNum)?.topicStats.find(t => t.name === nextProb.topicName);
+    }
+
+    return { 
+      stats: { total, done, pct, weekStats },
+      currentFocusTopic: focusTopic ? { ...focusTopic, weekNum: nextProb.weekNum } : null,
+      nextScheduledProblem: nextProb || null
+    };
+  }, [completed]);
+
+  // Extract all topics for the dropdown
+  const allTopics = useMemo(() => {
+    const tSet = new Set();
+    CURRICULUM.forEach(w => w.topics.forEach(t => tSet.add(t.name)));
+    return Array.from(tSet);
+  }, []);
 
   return (
     <div className="page-wide roadmap-page">
       {/* ── Global Header ─────────────────────────────────── */}
       <div className="roadmap-header">
         <div className="roadmap-header-content">
-          <h1>8-Week DSA Roadmap</h1>
-          <p className="roadmap-sub">A structured guide to mastering Data Structures and Algorithms.</p>
+          <h1>4-Week Interview Curriculum</h1>
+          <p className="roadmap-sub">A focused study plan for acing technical interviews.</p>
         </div>
         
         <div className="overall-stats-card">
@@ -138,44 +155,77 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-      {/* ── Rules Banner ─────────────────────────────────── */}
-      <div className="rules-banner">
-        <div className="rule-item"><strong>12-15</strong> Probs/Week</div>
-        <div className="rule-item"><strong>8-9</strong> New</div>
-        <div className="rule-item"><strong>4-6</strong> Revision</div>
-        <div className="rule-item"><strong>70/30</strong> Easy/Med</div>
+      {/* ── Focus Cards ───────────────────────────────────── */}
+      <div className="focus-cards">
+        <div className="focus-card">
+          <h4>Current Focus Topic</h4>
+          {currentFocusTopic ? (
+            <>
+              <div className="focus-title">Week {currentFocusTopic.weekNum}: {currentFocusTopic.name}</div>
+              <div className="focus-prog">
+                <span>{currentFocusTopic.done}/{currentFocusTopic.total}</span>
+                <div className="focus-bar">
+                  <div className="focus-bar-fill" style={{width: `${currentFocusTopic.pct}%`}}></div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="focus-title">All Topics Completed! 🎉</div>
+          )}
+        </div>
+        <div className="focus-card">
+          <h4>Next Scheduled Problem</h4>
+          {nextScheduledProblem ? (
+            <>
+              <div className="focus-title">{nextScheduledProblem.name}</div>
+              <div className="focus-meta">
+                Scheduled: {nextScheduledProblem.scheduledDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
+                <span className={`p-badge ${nextScheduledProblem.difficulty}`}>{nextScheduledProblem.difficulty}</span>
+              </div>
+            </>
+          ) : (
+            <div className="focus-title">No upcoming problems.</div>
+          )}
+        </div>
       </div>
 
       {/* ── Filters ────────────────────────────────────────── */}
-      <div className="roadmap-filters">
-        {["all", "new", "revision"].map(f => (
-          <button 
-            key={f}
-            className={`filter-btn ${activeFilter === f ? "active" : ""}`}
-            onClick={() => setActiveFilter(f)}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)} Problems
-          </button>
-        ))}
+      <div className="roadmap-filters form-filters">
+        <select name="week" value={filters.week} onChange={handleFilterChange} className="select">
+          <option value="all">All Weeks</option>
+          {CURRICULUM.map(w => <option key={w.week} value={w.week}>Week {w.week}</option>)}
+        </select>
+
+        <select name="topic" value={filters.topic} onChange={handleFilterChange} className="select">
+          <option value="all">All Topics</option>
+          {allTopics.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+
+        <select name="difficulty" value={filters.difficulty} onChange={handleFilterChange} className="select">
+          <option value="all">All Difficulties</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+
+        <select name="status" value={filters.status} onChange={handleFilterChange} className="select">
+          <option value="all">All Statuses</option>
+          <option value="completed">Completed</option>
+          <option value="incomplete">Incomplete</option>
+        </select>
       </div>
 
-      {/* ── Week List ────────────────────────────────────────── */}
+      {/* ── Curriculum List ────────────────────────────────── */}
       <div className="week-accordion">
-        {ROADMAP.map(week => {
+        {CURRICULUM.filter(w => filters.week === "all" || w.week.toString() === filters.week).map(week => {
           const weekStat = stats.weekStats.find(s => s.weekNum === week.week);
-          const isOpen = openWeeks.has(week.week);
+          const isOpen = openWeeks.has(week.week) || filters.week !== "all" || filters.topic !== "all"; // auto-open if filtered
           
-          const newProblems = [...week.new, ...(customProblems[`w${week.week}-new`] || [])]
-            .map(p => ({ ...p, type: 'new' }));
-          const revProblems = [...week.revision, ...(customProblems[`w${week.week}-revision`] || [])]
-            .map(p => ({ ...p, type: 'revision' }));
-
           return (
             <div key={week.week} className={`week-card ${isOpen ? "open" : ""}`}>
               <div className="week-header" onClick={() => toggleWeek(week.week)}>
                 <div className="week-header-left">
                   <span className="week-badge">Week {week.week}</span>
-                  <span className="week-title">{week.topic}</span>
                 </div>
                 <div className="week-header-right">
                   <div className="week-prog-pill">
@@ -191,60 +241,48 @@ export default function RoadmapPage() {
               {isOpen && (
                 <div className="week-body">
                   <div className="week-body-inner">
-                    {/* New Problems */}
-                    {(activeFilter === "all" || activeFilter === "new") && (
-                      <div className="prob-section">
-                        <div className="prob-section-title new-title">
-                          <span className="dot"></span> 🆕 New Problems ({newProblems.length})
-                        </div>
-                        <div className="prob-list">
-                          {newProblems.map(p => (
-                            <ProblemRow 
-                              key={p.id} 
-                              week={week.week} 
-                              p={p} 
-                              type="new" 
-                              isDone={completed.has(`w${week.week}-new-${p.id}`)}
-                              onToggle={() => toggleProblem(week.week, "new", p.id)}
-                              onAddReminder={() => addToReminders(p, "new")}
-                              onRemove={p.custom ? () => removeCustom(week.week, "new", p.id) : null}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {week.topics.filter(t => filters.topic === "all" || t.name === filters.topic).map(topic => {
+                      const topicStat = weekStat.topicStats.find(s => s.name === topic.name);
+                      
+                      const filteredProblems = topic.problems.filter(p => {
+                        const isDone = completed.has(p.id);
+                        if (filters.difficulty !== "all" && p.difficulty !== filters.difficulty) return false;
+                        if (filters.status === "completed" && !isDone) return false;
+                        if (filters.status === "incomplete" && isDone) return false;
+                        return true;
+                      });
 
-                    <div className="week-divider" />
+                      if (filteredProblems.length === 0) return null;
 
-                    {/* Revision */}
-                    {(activeFilter === "all" || activeFilter === "revision") && (
-                      <div className="prob-section">
-                        <div className="prob-section-title rev-title">
-                          <span className="dot"></span> 🔁 Revision ({revProblems.length})
-                        </div>
-                        <div className="prob-list">
-                          {revProblems.map(p => (
-                            <ProblemRow 
-                              key={p.id} 
-                              week={week.week} 
-                              p={p} 
-                              type="revision" 
-                              isDone={completed.has(`w${week.week}-revision-${p.id}`)}
-                              onToggle={() => toggleProblem(week.week, "revision", p.id)}
-                              onAddReminder={() => addToReminders(p, "revision")}
-                              onRemove={p.custom ? () => removeCustom(week.week, "revision", p.id) : null}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      return (
+                        <div key={topic.name} className="prob-section">
+                          <div className="prob-section-title">
+                            <span className="dot"></span> {topic.name} 
+                            <span className="topic-prog">({topicStat.done}/{topicStat.total})</span>
+                          </div>
+                          
+                          <div className="prob-list">
+                            {filteredProblems.map(p => {
+                              const isDone = completed.has(p.id);
+                              const scheduledDate = new Date(START_DATE);
+                              scheduledDate.setDate(scheduledDate.getDate() + p.dayOffset);
 
-                    <button 
-                      className="btn-add-week"
-                      onClick={() => setModalData({ weekNum: week.week, topic: week.topic })}
-                    >
-                      ＋ Add Problem to Week {week.week}
-                    </button>
+                              return (
+                                <ProblemRow 
+                                  key={p.id} 
+                                  p={p} 
+                                  topicName={topic.name}
+                                  scheduledDate={scheduledDate}
+                                  isDone={isDone}
+                                  onToggle={() => toggleProblem(p.id)}
+                                  onAddReminder={() => addToReminders(p, topic.name)}
+                                />
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -252,70 +290,25 @@ export default function RoadmapPage() {
           );
         })}
       </div>
-
-      {/* ── Modal ────────────────────────────────────────── */}
-      {modalData && (
-        <div className="modal-overlay" onClick={() => setModalData(null)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()}>
-            <h3>Add Problem — Week {modalData.weekNum}</h3>
-            <p className="modal-sub">{modalData.topic}</p>
-            
-            <form onSubmit={e => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              const name = formData.get("name");
-              const idStr = formData.get("id");
-              const type = formData.get("type");
-              
-              if (!name) return;
-              const problem = {
-                id: idStr ? parseInt(idStr) : `custom_${Date.now()}`,
-                name: name,
-                custom: true
-              };
-              handleAddCustom(modalData.weekNum, type, problem);
-              setModalData(null);
-            }}>
-              <div className="field">
-                <label>Problem #</label>
-                <input name="id" type="number" placeholder="e.g. 42" className="input" />
-              </div>
-              <div className="field">
-                <label>Problem Name</label>
-                <input name="name" type="text" placeholder="e.g. Trapping Rain Water" className="input" required />
-              </div>
-              <div className="field">
-                <label>Section</label>
-                <select name="type" className="select">
-                  <option value="new">🆕 New Problems</option>
-                  <option value="revision">🔁 Revision</option>
-                </select>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setModalData(null)}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{marginTop: 0}}>Add Problem</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-function ProblemRow({ week, p, type, isDone, onToggle, onAddReminder, onRemove }) {
+function ProblemRow({ p, topicName, scheduledDate, isDone, onToggle, onAddReminder }) {
   return (
     <div className={`p-row ${isDone ? "done" : ""}`}>
       <input type="checkbox" checked={isDone} onChange={onToggle} />
-      <span className="p-id">{String(p.id).startsWith("custom_") ? "🔖" : `#${p.id}`}</span>
+      <div className="p-date-col">
+        {scheduledDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}
+      </div>
+      <span className="p-id">#{p.id}</span>
       <a href={leetcodeUrl(p.name)} target="_blank" rel="noreferrer" className="p-link">{p.name}</a>
       <div className="p-badges">
-        <span className={`p-badge ${type}`}>{type}</span>
-        {p.custom && <span className="p-badge custom">Custom</span>}
+        <span className={`p-badge ${p.difficulty}`}>{p.difficulty}</span>
+        <span className="p-badge topic">{topicName}</span>
       </div>
       <div className="p-actions">
         <button className="p-btn-rem" onClick={onAddReminder}>+ Reminder</button>
-        {onRemove && <button className="p-btn-del" onClick={onRemove}>✕</button>}
       </div>
     </div>
   );
