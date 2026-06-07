@@ -15,6 +15,8 @@ import os
 app = Flask(__name__, static_folder="frontend/dist", static_url_path="/")
 app.secret_key = os.environ.get("SECRET_KEY", "coding-tracker-super-secret-key-123")
 
+# Initialize database on startup
+init_db()
 # ── Blueprints ────────────────────────────────────────────────────────────────
 app.register_blueprint(problems_bp)           # /problems/*
 app.register_blueprint(analytics_bp)          # /analytics/*
@@ -38,6 +40,5 @@ def serve_react(path):
 
 
 if __name__ == "__main__":
-    init_db()
     print("✅ Database initialized. Starting server at http://127.0.0.1:5000")
     app.run(debug=True)
