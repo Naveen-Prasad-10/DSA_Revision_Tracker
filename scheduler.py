@@ -94,6 +94,8 @@ def run():
     subject  = f"🧠 Coding Reminder: {len(due_today)} due today, {len(problems)} total upcoming"
     body     = build_email_body(problems)
 
+    import sys
+    sys.stdout.reconfigure(encoding='utf-8')
     print(body)  # Also print to console for logs
 
     if CONFIG["sender"] != "your_email@gmail.com" and CONFIG["password"] != "your_app_password":
