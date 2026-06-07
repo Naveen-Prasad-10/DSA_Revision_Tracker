@@ -11,6 +11,51 @@ const http = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// ── Auth ──────────────────────────────────────────────────────────────────────
+
+export const register = (data) =>
+  http.post("/auth/register", data).then((r) => r.data);
+
+export const login = (data) =>
+  http.post("/auth/login", data).then((r) => r.data);
+
+export const logout = () =>
+  http.post("/auth/logout").then((r) => r.data);
+
+export const getMe = () =>
+  http.get("/auth/me").then((r) => r.data);
+
+// ── Roadmap Progress ──────────────────────────────────────────────────────────
+
+export const getRoadmapProgress = () =>
+  http.get("/roadmap/progress").then((r) => r.data);
+
+export const toggleRoadmapProgress = (problem_id) =>
+  http.post("/roadmap/progress/toggle", { problem_id }).then((r) => r.data);
+
+export const syncRoadmapProgress = (completed_ids) =>
+  http.post("/roadmap/progress/sync", { completed_ids }).then((r) => r.data);
+
+// ── Social / Friends ──────────────────────────────────────────────────────────
+
+export const searchUsers = (query) =>
+  http.get(`/social/search?q=${encodeURIComponent(query)}`).then((r) => r.data);
+
+export const sendFriendRequest = (id) =>
+  http.post(`/social/request/${id}`).then((r) => r.data);
+
+export const acceptFriendRequest = (id) =>
+  http.post(`/social/accept/${id}`).then((r) => r.data);
+
+export const removeFriend = (id) =>
+  http.delete(`/social/friend/${id}`).then((r) => r.data);
+
+export const getFriends = () =>
+  http.get("/social/friends").then((r) => r.data);
+
+export const getPublicProfile = (id) =>
+  http.get(`/social/profile/${id}`).then((r) => r.data);
+
 // ── Problems ──────────────────────────────────────────────────────────────────
 
 /** Fetch all problems sorted by next_review */

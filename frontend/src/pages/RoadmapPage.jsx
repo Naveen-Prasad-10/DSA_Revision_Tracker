@@ -1,21 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { CURRICULUM, START_DATE } from "../data/roadmapData";
-import { addProblem } from "../services/api";
+import { addProblem, getRoadmapProgress, toggleRoadmapProgress, syncRoadmapProgress } from "../services/api";
 import "./RoadmapPage.css";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const toSlug = (name) => name.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-");
 const leetcodeUrl = (name) => `https://leetcode.com/problems/${toSlug(name)}/`;
 
-const STORAGE_KEY_COMPLETED = "roadmap_completed_v2"; // Changed key so we don't conflict with old data
+const STORAGE_KEY_COMPLETED = "roadmap_completed_v2";
 
 export default function RoadmapPage() {
   // ── State ──────────────────────────────────────────────────────────────────
-  const [completed, setCompleted] = useState(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY_COMPLETED) || "[]"));
-    } catch { return new Set(); }
-  });
+  const [completed, setCompleted] = useState(new Set());
 
   const [filters, setFilters] = useState({
     week: "all",
@@ -26,10 +22,31 @@ export default function RoadmapPage() {
 
   const [openWeeks, setOpenWeeks] = useState(new Set([1])); // Week 1 open by default
 
-  // ── Sync with localStorage ───────────────────────────────────────────────
+  // ── Sync with DB / Migrate from localStorage ─────────────────────────────
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify([...completed]));
-  }, [completed]);
+    const initData = async () => {
+      const localData = localStorage.getItem(STORAGE_KEY_COMPLETED);
+      if (localData) {
+        try {
+          const ids = JSON.parse(localData);
+          if (Array.isArray(ids) && ids.length > 0) {
+            await syncRoadmapProgress(ids);
+          }
+          localStorage.removeItem(STORAGE_KEY_COMPLETED);
+        } catch (e) {
+          console.error("Migration failed", e);
+        }
+      }
+      
+      try {
+        const dbIds = await getRoadmapProgress();
+        setCompleted(new Set(dbIds));
+      } catch (e) {
+        console.error("Failed to fetch roadmap progress", e);
+      }
+    };
+    initData();
+  }, []);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const toggleWeek = (weekNum) => {
@@ -41,13 +58,27 @@ export default function RoadmapPage() {
     });
   };
 
-  const toggleProblem = (id) => {
+  const toggleProblem = async (id) => {
+    // Optimistic UI update
     setCompleted(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
+    
+    try {
+      await toggleRoadmapProgress(id);
+    } catch (e) {
+      console.error("Failed to save progress", e);
+      // Revert on error
+      setCompleted(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    }
   };
 
   const addToReminders = async (problem, topicName) => {

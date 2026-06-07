@@ -12,15 +12,17 @@ Endpoints:
   GET /analytics/summary              → headline stats for the dashboard cards
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, session
 from models import get_db
 from datetime import date, timedelta
+from auth import login_required
 
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/analytics")
 
 
 # ── 1. Problems Solved Over Time ──────────────────────────────────────────────
 @analytics_bp.route("/problems-over-time")
+@login_required
 def problems_over_time():
     """
     Returns daily problem counts for the last 30 days.
@@ -28,14 +30,16 @@ def problems_over_time():
 
     Response: [ { "date": "YYYY-MM-DD", "count": N }, ... ]
     """
+    user_id = session.get("user_id")
     conn = get_db()
     rows = conn.execute(
         """
         SELECT date_solved, COUNT(*) AS count
         FROM   problems
+        WHERE  user_id = ?
         GROUP  BY date_solved
         ORDER  BY date_solved ASC
-        """
+        """, (user_id,)
     ).fetchall()
     conn.close()
 
@@ -56,6 +60,7 @@ def problems_over_time():
 
 # ── 2. Weak Topics Detection ──────────────────────────────────────────────────
 @analytics_bp.route("/weak-topics")
+@login_required
 def weak_topics():
     """
     Identifies weak topics using two signals:
@@ -74,6 +79,7 @@ def weak_topics():
       }, ...
     ]
     """
+    user_id = session.get("user_id")
     conn = get_db()
     rows = conn.execute(
         """
@@ -83,11 +89,12 @@ def weak_topics():
             COUNT(*)                                             AS problem_count,
             SUM(CASE WHEN is_done = 0 THEN 1 ELSE 0 END)        AS active_count
         FROM   problems
+        WHERE  user_id = ?
         GROUP  BY topic
         HAVING COUNT(*) >= 1
         ORDER  BY avg_confidence ASC, problem_count DESC
         LIMIT  10
-        """
+        """, (user_id,)
     ).fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows])
@@ -95,6 +102,7 @@ def weak_topics():
 
 # ── 3. Streak Tracking ────────────────────────────────────────────────────────
 @analytics_bp.route("/streak")
+@login_required
 def streak():
     """
     Computes streak statistics from distinct dates in date_solved.
@@ -106,9 +114,10 @@ def streak():
       "total_active_days": N    # total distinct days with any solve
     }
     """
+    user_id = session.get("user_id")
     conn = get_db()
     rows = conn.execute(
-        "SELECT DISTINCT date_solved FROM problems ORDER BY date_solved ASC"
+        "SELECT DISTINCT date_solved FROM problems WHERE user_id = ? ORDER BY date_solved ASC", (user_id,)
     ).fetchall()
     conn.close()
 
@@ -149,6 +158,7 @@ def streak():
 
 # ── 4. Summary (headline stats) ───────────────────────────────────────────────
 @analytics_bp.route("/summary")
+@login_required
 def summary():
     """
     Aggregate headline numbers for the dashboard cards.
@@ -162,15 +172,16 @@ def summary():
     }
     """
     today = date.today().isoformat()
+    user_id = session.get("user_id")
     conn  = get_db()
 
-    total     = conn.execute("SELECT COUNT(*) FROM problems").fetchone()[0]
+    total     = conn.execute("SELECT COUNT(*) FROM problems WHERE user_id = ?", (user_id,)).fetchone()[0]
     due       = conn.execute(
-        "SELECT COUNT(*) FROM problems WHERE next_review <= ? AND is_done = 0", (today,)
+        "SELECT COUNT(*) FROM problems WHERE user_id = ? AND next_review <= ? AND is_done = 0", (user_id, today)
     ).fetchone()[0]
-    completed = conn.execute("SELECT COUNT(*) FROM problems WHERE is_done = 1").fetchone()[0]
+    completed = conn.execute("SELECT COUNT(*) FROM problems WHERE user_id = ? AND is_done = 1", (user_id,)).fetchone()[0]
     avg_conf  = conn.execute(
-        "SELECT ROUND(AVG(confidence), 2) FROM problems WHERE is_done = 0"
+        "SELECT ROUND(AVG(confidence), 2) FROM problems WHERE user_id = ? AND is_done = 0", (user_id,)
     ).fetchone()[0] or 0
 
     conn.close()

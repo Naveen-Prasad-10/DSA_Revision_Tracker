@@ -33,8 +33,21 @@ def init_db():
       custom_days  - optional integer: overrides confidence-based interval
                      NULL means "use confidence default"
       is_done      - 0 = active, 1 = marked as completed
+      user_id      - Foreign Key to users.id
     """
     conn = get_db()
+    
+    # Users table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    """)
+    
+    # Problems table
     conn.execute("""
         CREATE TABLE IF NOT EXISTS problems (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,12 +58,33 @@ def init_db():
             confidence  INTEGER NOT NULL CHECK(confidence BETWEEN 1 AND 5),
             next_review TEXT    NOT NULL,
             custom_days INTEGER DEFAULT NULL,
-            is_done     INTEGER DEFAULT 0
+            is_done     INTEGER DEFAULT 0,
+            user_id     INTEGER
+        )
+    """)
+    
+    # Roadmap Progress table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS roadmap_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            problem_id TEXT NOT NULL,
+            completed_at TEXT NOT NULL,
+            UNIQUE(user_id, problem_id)
+        )
+    """)
+    
+    # Friends table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS friends (
+            user_id INTEGER NOT NULL,
+            friend_id INTEGER NOT NULL,
+            status TEXT NOT NULL,
+            PRIMARY KEY (user_id, friend_id)
         )
     """)
 
-    # Migration: add custom_days to existing databases that were created
-    # before this column was introduced (ALTER TABLE is idempotent-safe via try/except)
+    # Migration: add columns to existing databases
     try:
         conn.execute("ALTER TABLE problems ADD COLUMN custom_days INTEGER DEFAULT NULL")
     except Exception:
@@ -60,6 +94,12 @@ def init_db():
         conn.execute("ALTER TABLE problems ADD COLUMN is_done INTEGER DEFAULT 0")
     except Exception:
         pass  # Column already exists — nothing to do
+        
+    try:
+        conn.execute("ALTER TABLE problems ADD COLUMN user_id INTEGER")
+    except Exception:
+        pass  # Column already exists — nothing to do
 
     conn.commit()
     conn.close()
+

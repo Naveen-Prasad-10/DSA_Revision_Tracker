@@ -7,12 +7,20 @@ from flask import Flask
 from models import init_db
 from routes import problems_bp
 from analytics import analytics_bp
+from auth import auth_bp
+from roadmap import roadmap_bp
+from social import social_bp
+import os
 
 app = Flask(__name__, static_folder="frontend/dist", static_url_path="/")
+app.secret_key = os.environ.get("SECRET_KEY", "coding-tracker-super-secret-key-123")
 
 # ── Blueprints ────────────────────────────────────────────────────────────────
 app.register_blueprint(problems_bp)           # /problems/*
 app.register_blueprint(analytics_bp)          # /analytics/*
+app.register_blueprint(auth_bp)               # /auth/*
+app.register_blueprint(roadmap_bp)            # /roadmap/*
+app.register_blueprint(social_bp)             # /social/*
 
 # ── Page routes (Catch-all for React Router) ──────────────────────────────────
 @app.errorhandler(404)

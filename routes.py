@@ -11,9 +11,10 @@ Endpoints:
   DELETE /problems/<id>         - Permanently delete a problem
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from models import get_db
 from utils import calculate_next_review, get_today
+from auth import login_required
 
 problems_bp = Blueprint("problems", __name__)
 
@@ -22,6 +23,7 @@ problems_bp = Blueprint("problems", __name__)
 # POST /problems  — Add a new problem
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems", methods=["POST"])
+@login_required
 def add_problem():
     """
     Expects JSON body:
@@ -48,6 +50,7 @@ def add_problem():
     date_solved = data["date_solved"]
     confidence  = int(data["confidence"])
     custom_days = int(data["custom_days"]) if data.get("custom_days") else None
+    user_id     = session.get("user_id")
 
     if difficulty not in ("Easy", "Medium", "Hard"):
         return jsonify({"error": "difficulty must be Easy, Medium, or Hard"}), 400
@@ -61,9 +64,9 @@ def add_problem():
     conn = get_db()
     cursor = conn.execute(
         """INSERT INTO problems (title, topic, difficulty, date_solved, confidence,
-                                  next_review, custom_days)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (title, topic, difficulty, date_solved, confidence, next_review, custom_days)
+                                  next_review, custom_days, user_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (title, topic, difficulty, date_solved, confidence, next_review, custom_days, user_id)
     )
     conn.commit()
     new_id = cursor.lastrowid
@@ -81,11 +84,14 @@ def add_problem():
 # GET /problems  — Fetch all problems
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems", methods=["GET"])
+@login_required
 def get_all_problems():
     """Return all problems sorted by next_review date (ascending)."""
+    user_id = session.get("user_id")
     conn = get_db()
     rows = conn.execute(
-        "SELECT * FROM problems ORDER BY next_review ASC"
+        "SELECT * FROM problems WHERE user_id = ? ORDER BY next_review ASC",
+        (user_id,)
     ).fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows])
@@ -95,13 +101,15 @@ def get_all_problems():
 # GET /problems/today  — Fetch problems due today or overdue
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems/today", methods=["GET"])
+@login_required
 def get_due_today():
     """Return active (not done) problems where next_review <= today."""
     today = get_today()
+    user_id = session.get("user_id")
     conn = get_db()
     rows = conn.execute(
-        "SELECT * FROM problems WHERE next_review <= ? AND is_done = 0 ORDER BY next_review ASC",
-        (today,)
+        "SELECT * FROM problems WHERE user_id = ? AND next_review <= ? AND is_done = 0 ORDER BY next_review ASC",
+        (user_id, today)
     ).fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows])
@@ -111,13 +119,15 @@ def get_due_today():
 # GET /problems/upcoming  — Fetch future scheduled problems
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems/upcoming", methods=["GET"])
+@login_required
 def get_upcoming():
     """Return active (not done) problems scheduled after today."""
     today = get_today()
+    user_id = session.get("user_id")
     conn = get_db()
     rows = conn.execute(
-        "SELECT * FROM problems WHERE next_review > ? AND is_done = 0 ORDER BY next_review ASC",
-        (today,)
+        "SELECT * FROM problems WHERE user_id = ? AND next_review > ? AND is_done = 0 ORDER BY next_review ASC",
+        (user_id, today)
     ).fetchall()
     conn.close()
     return jsonify([dict(row) for row in rows])
@@ -127,20 +137,13 @@ def get_upcoming():
 # PUT /problems/<id>  — Full patch: edit any field; reschedule
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems/<int:problem_id>", methods=["PUT"])
+@login_required
 def update_problem(problem_id):
     """
     Update any combination of a problem's fields.
     All fields are optional — only provided fields are changed.
-
-    Accepted JSON fields:
-      title, topic, difficulty, date_solved, confidence, custom_days
-
-    Scheduling behaviour:
-      - If custom_days > 0  → use that exact interval, ignore confidence
-      - If custom_days is 0 or null → fall back to confidence-based interval
-      - next_review is always recalculated from today when either
-        confidence or custom_days changes
     """
+    user_id = session.get("user_id")
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -148,7 +151,7 @@ def update_problem(problem_id):
     # Fetch current row so we can merge changes
     conn = get_db()
     row = conn.execute(
-        "SELECT * FROM problems WHERE id = ?", (problem_id,)
+        "SELECT * FROM problems WHERE id = ? AND user_id = ?", (problem_id, user_id)
     ).fetchone()
 
     if row is None:
@@ -186,9 +189,9 @@ def update_problem(problem_id):
         """UPDATE problems
            SET title=?, topic=?, difficulty=?, date_solved=?,
                confidence=?, next_review=?, custom_days=?
-           WHERE id=?""",
+           WHERE id=? AND user_id=?""",
         (title, topic, difficulty, date_solved,
-         confidence, next_review, custom_days, problem_id)
+         confidence, next_review, custom_days, problem_id, user_id)
     )
     conn.commit()
     conn.close()
@@ -210,15 +213,15 @@ def update_problem(problem_id):
 # PATCH /problems/<id>/done  — Toggle done state
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems/<int:problem_id>/done", methods=["PATCH"])
+@login_required
 def toggle_done(problem_id):
     """
     Toggle the is_done flag on a problem.
-    - 0 → 1 : mark as completed (won't appear in due/upcoming)
-    - 1 → 0 : reactivate (appears in due/upcoming again)
     """
+    user_id = session.get("user_id")
     conn = get_db()
     row = conn.execute(
-        "SELECT is_done FROM problems WHERE id = ?", (problem_id,)
+        "SELECT is_done FROM problems WHERE id = ? AND user_id = ?", (problem_id, user_id)
     ).fetchone()
 
     if row is None:
@@ -227,7 +230,7 @@ def toggle_done(problem_id):
 
     new_state = 0 if row["is_done"] else 1  # toggle
     conn.execute(
-        "UPDATE problems SET is_done = ? WHERE id = ?", (new_state, problem_id)
+        "UPDATE problems SET is_done = ? WHERE id = ? AND user_id = ?", (new_state, problem_id, user_id)
     )
     conn.commit()
     conn.close()
@@ -243,14 +246,16 @@ def toggle_done(problem_id):
 # DELETE /problems/<id>  — Permanently delete
 # ──────────────────────────────────────────────
 @problems_bp.route("/problems/<int:problem_id>", methods=["DELETE"])
+@login_required
 def delete_problem(problem_id):
     """
     Permanently remove a problem from the database.
     This action is irreversible.
     """
+    user_id = session.get("user_id")
     conn = get_db()
     result = conn.execute(
-        "DELETE FROM problems WHERE id = ?", (problem_id,)
+        "DELETE FROM problems WHERE id = ? AND user_id = ?", (problem_id, user_id)
     )
     conn.commit()
     conn.close()
