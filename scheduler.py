@@ -26,7 +26,7 @@ CONFIG = {
     "smtp_port":   int(os.getenv("SMTP_PORT", "587")),
     "sender":      os.getenv("EMAIL_SENDER", "your_email@gmail.com"),
     "password":    os.getenv("EMAIL_PASSWORD", "your_app_password"),
-    "recipient":   os.getenv("EMAIL_RECIPIENT", "naveenprasad2112@gmail.com"),
+    "recipient":   os.getenv("EMAIL_RECIPIENT", "[EMAIL_ADDRESS]"),
 }
 
 
