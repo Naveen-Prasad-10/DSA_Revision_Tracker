@@ -257,8 +257,16 @@ export default function RoadmapPage() {
                       return (
                         <div key={topic.name} className="prob-section">
                           <div className="prob-section-title">
-                            <span className="dot"></span> {topic.name} 
-                            <span className="topic-prog">({topicStat.done}/{topicStat.total})</span>
+                            <div className="topic-name-wrap">
+                              <span className="dot"></span> 
+                              <span className="topic-title-text">{topic.name}</span>
+                            </div>
+                            <div className="topic-prog-container">
+                              <div className="topic-prog-bar">
+                                <div className="topic-prog-fill" style={{ width: `${topicStat.pct}%` }} />
+                              </div>
+                              <span className="topic-prog-text">{topicStat.done}/{topicStat.total}</span>
+                            </div>
                           </div>
                           
                           <div className="prob-list">
