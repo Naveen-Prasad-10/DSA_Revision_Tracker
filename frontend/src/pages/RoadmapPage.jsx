@@ -269,7 +269,7 @@ export default function RoadmapPage() {
 
                               return (
                                 <ProblemRow 
-                                  key={p.id} 
+                                  key={p.curriculumId} 
                                   p={p} 
                                   topicName={topic.name}
                                   scheduledDate={scheduledDate}
